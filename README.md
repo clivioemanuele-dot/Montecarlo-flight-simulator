@@ -1,17 +1,17 @@
 # Montecarlo-flight-simulator
 
-# 🚀 6-DOF Monte Carlo Flight Simulator
+# 6-DOF Monte Carlo Flight Simulator
 
 > Sviluppato un simulatore balistico e stocastico avanzato a 6 Gradi di Libertà (6-DOF) scritto in Python, focalizzato sull'ingegneria aerospaziale, programmazione ad oggetti (OOP) e analisi statistica della dispersione.
 
 ---
 
-## 📋 Panoramica del Progetto
+## Panoramica del Progetto
 Questo software è stato progettato per simulare la traiettoria di volo di un razzo a propulsione solida e prevedere la sua zona di atterraggio stimata in condizioni operative reali. Attraverso l'implementazione del **Metodo Monte Carlo** (N=1000 voli stocastici), il simulatore tiene conto delle incertezze di lancio (tolleranze di rampa e variabilità azimutale) calcolando le matrici di covarianza e le relative **ellissi di confidenza**.
 
 ---
 
-## 🛠️ Stack Tecnologico
+## Stack Tecnologico
 * **Linguaggio:** Python 3.13
 * **Aerospazio & Fisica:** [RocketPy](https://github.com/RocketPyTeam/RocketPy) (Simulazione 6-DOF del volo)
 * **Calcolo Numerico:** NumPy, SciPy (Algebra lineare e matrici di covarianza)
@@ -20,7 +20,7 @@ Questo software è stato progettato per simulare la traiettoria di volo di un ra
 
 ---
 
-## 📂 Struttura del Progetto
+## Struttura del Progetto
 ```text
 polito_mc_sim/
 │
