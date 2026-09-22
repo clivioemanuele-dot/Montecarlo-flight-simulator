@@ -1,0 +1,2 @@
+[console_scripts]
+mcsim = mcsim.cli:main

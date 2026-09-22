@@ -1,92 +1,106 @@
-"""
-Dashboard Interattiva: app.py
-Web App basata su Streamlit per il portfolio ingegneristico personale.
-Mostra i risultati del simulatore 6-DOF Monte Carlo.
+"""Dashboard Streamlit: mostra **solo** risultati prodotti dal simulatore.
+
+La versione precedente generava numeri con ``np.random.normal`` e li presentava
+come "simulazione stocastica" (D-01). Qui la dashboard legge i run salvati da
+``python -m mcsim`` e, se richiesto, lancia una piccola campagna reale.
+
+Si apre sempre con dei dati: se non c'è nessuna campagna in ``runs/`` usa quella
+di esempio inclusa nel repository (``examples/``), così funziona anche appena
+clonata o pubblicata su Streamlit Community Cloud.
+
+Avvio::
+
+    streamlit run app.py
 """
 
+from __future__ import annotations
+
+from pathlib import Path
+
+import pandas as pd
 import streamlit as st
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse
 
-# Configurazione della pagina web
-st.set_page_config(
-    page_title="PoliTo Rocket Simulator - Portfolio",
-    page_icon="🚀",
-    layout="wide"
-)
+from mcsim.config import SimConfig
+from mcsim.plotting import plot_convergence, plot_dispersion
+from mcsim.runner import run_monte_carlo
+from mcsim.stats import summarize_run
+from mcsim.status import FlightStatus
+from mcsim.storage import list_runs, load_run
 
-# Titolo principale della Dashboard
-st.title("🚀 6-DOF Monte Carlo Flight Simulator")
-st.markdown("### Portfolio Ingegneristico")
-st.write("Benvenuto nella dashboard interattiva del simulatore di volo stocastico. "
-         "Questo strumento calcola la dispersione balistica e le matrici di covarianza per un vettore a propulsione solida.")
+st.set_page_config(page_title="Monte Carlo 6-DOF — dispersione", layout="wide")
 
-# Sidebar per i controlli interattivi
-st.sidebar.header("Parametri di Simulazione")
-num_sims = st.sidebar.slider("Numero di Voli Monte Carlo (N)", min_value=10, max_value=500, value=100, step=10)
-rail_len = st.sidebar.slider("Lunghezza Rampa di Lancio (m)", min_value=3.0, max_value=10.0, value=5.2, step=0.1)
+PROJECT_ROOT = Path(__file__).resolve().parent
+EXAMPLE_RUNS = PROJECT_ROOT / "examples"
+"""Campagna di esempio versionata: la dashboard non è mai vuota al primo avvio."""
 
-# Pulsante per avviare la generazione interattiva
-if st.sidebar.button("Esegui Simulazione Stocastica"):
-    with st.spinner(f"Elaborazione in corso di {num_sims} voli balistici..."):
-        
-        # Simulazione rapida dei dati di impatto per la dashboard
-        np.random.seed(42) # Per riproducibilità
-        inclinations = np.random.normal(loc=85.0, scale=1.5, size=num_sims)
-        headings = np.random.uniform(low=0.0, high=360.0, size=num_sims)
-        
-        # Modello semplificato di dispersione radiale basato sui dati fisici del rocketpy
-        r_impact = np.random.normal(loc=700.0, scale=80.0, size=num_sims) * (5.2 / rail_len)
-        x_vals = r_impact * np.cos(np.radians(headings))
-        y_vals = r_impact * np.sin(np.radians(headings))
-        
-        apogees = np.random.normal(loc=2490.0, scale=13.2, size=num_sims)
 
-    st.success("Simulazione completata con successo!")
+@st.cache_data(show_spinner=False)
+def _load(run_dir: str, mtime: float) -> tuple[pd.DataFrame, dict]:  # mtime invalida la cache
+    return load_run(run_dir)
 
-    # Sezione Metriche Chiave (KPI)
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Voli Simulati", f"{num_sims}")
-    col2.metric("Apogeo Medio", f"{np.mean(apogees):.2f} m")
-    col3.metric("Dev. Std. Apogeo", f"{np.std(apogees):.2f} m")
-    col4.metric("Dispersione Massima", f"{np.max(np.hypot(x_vals, y_vals)):.2f} m")
 
-    # Sezione Grafici Interattivi
-    st.markdown("---")
-    st.subheader("📊 Analisi di Dispersione Spaziale & Ellissi di Covarianza")
-    
-    fig, ax = plt.subplots(figsize=(8, 8))
-    ax.scatter(x_vals, y_vals, alpha=0.5, s=20, color='royalblue', label=f'Impatti (N={num_sims})')
-    ax.scatter(0, 0, color='crimson', marker='*', s=250, label='Rampa di Lancio (0,0)')
-    
-    # Calcolo covarianza ed ellissi
-    center = (np.mean(x_vals), np.mean(y_vals))
-    cov_matrix = np.cov(x_vals, y_vals)
-    eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
-    order = eigenvalues.argsort()[::-1]
-    eigenvalues = eigenvalues[order]
-    eigenvectors = eigenvectors[:, order]
-    angle = np.degrees(np.arctan2(*eigenvectors[:, 0][::-1]))
-    
-    sigmas = {1: 'forestgreen', 2: 'darkorange', 3: 'firebrick'}
-    for n_std, color in sigmas.items():
-        width, height = 2 * n_std * np.sqrt(eigenvalues)
-        ell = Ellipse(xy=center, width=width, height=height, angle=angle,
-                      edgecolor=color, facecolor='none', linewidth=2, linestyle='--',
-                      label=f'Confidenza {n_std}$\sigma$')
-        ax.add_patch(ell)
-        
-    ax.set_title("Mappa di Atterraggio Monte Carlo", fontsize=12, fontweight='bold')
-    ax.set_xlabel("Distanza Est-Ovest [X] (m)")
-    ax.set_ylabel("Distanza Nord-Sud [Y] (m)")
-    ax.grid(True, linestyle=':', alpha=0.6)
-    ax.axhline(0, color='black', linewidth=0.5)
-    ax.axvline(0, color='black', linewidth=0.5)
-    ax.legend(loc='upper right')
-    
-    # Mostra il grafico dentro la pagina web di Streamlit
-    st.pyplot(fig)
-    
-else:
-    st.info("👈 Usa la barra laterale a sinistra per impostare i parametri e clicca su **'Esegui Simulazione Stocastica'** per avviare la dashboard.")
+st.title("Analisi di dispersione Monte Carlo 6-DOF")
+st.caption("Dati letti dai run salvati su disco: ogni numero è riproducibile da seed e configurazione del run.")
+
+folder = st.sidebar.text_input("Cartella dei run", value="runs")
+runs_dir = Path(folder) if Path(folder).is_absolute() else PROJECT_ROOT / folder
+
+with st.sidebar.form("new_run"):
+    st.subheader("Nuova campagna")
+    n = st.number_input("Voli", min_value=20, max_value=200, value=50, step=10)
+    seed = st.number_input("Seed", min_value=0, value=42, step=1)
+    submitted = st.form_submit_button("Esegui")
+    st.caption("Eseguita in serie, ~3 s per volo. Per campagne grandi usare la CLI, che è parallela.")
+if submitted:
+    with st.status(f"Simulazione di {n} voli in corso…", expanded=False) as box:
+        out = run_monte_carlo(SimConfig(), int(n), int(seed), runs_dir, workers=1, progress=False)
+        box.update(label=f"Completato: {out.run_dir.name}", state="complete")
+    st.session_state["selected_run"] = str(out.run_dir)
+
+runs = list_runs(runs_dir)
+if not runs:
+    runs = list_runs(EXAMPLE_RUNS)
+    if not runs:
+        st.info(f"Nessun run in `{runs_dir}`. Lancialo dalla barra laterale o con `python -m mcsim -n 1000 --seed 42`.")
+        st.stop()
+    st.info(
+        "Nessuna campagna in `runs/`: qui sotto c'è quella di esempio inclusa nel repository. "
+        "Per una tua campagna: `python -m mcsim -n 1000 --seed 42`, oppure il modulo qui a lato."
+    )
+
+names = [str(p) for p in runs]
+default = names.index(st.session_state["selected_run"]) if st.session_state.get("selected_run") in names else 0
+selected = st.sidebar.selectbox("Run", names, index=default, format_func=lambda p: Path(p).name)
+st.session_state["selected_run"] = selected
+df, meta = _load(selected, (Path(selected) / "results.csv").stat().st_mtime)
+summary = summarize_run(df)
+
+a, land = summary.apogee, summary.landing_nominal
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Voli", f"{summary.n_total}", help=f"Seed {meta.get('seed')} · RocketPy {meta['versions'].get('rocketpy')}")
+c2.metric("Successo", f"{summary.success_rate:.1%}", help="Status ok; IC 95 % Clopper–Pearson nel report")
+c3.metric("Apogeo AGL medio", f"{a.mean:,.0f} m", help=f"IC 95 %: {a.mean_ci[0]:,.0f}–{a.mean_ci[1]:,.0f} m")
+c4.metric("R95 impatti", f"{land.r95_m:,.0f} m" if land else "—", help="Raggio attorno al punto medio con il 95 %")
+
+left, right = st.columns([3, 2])
+with left:
+    ellipse = land.ellipse if land else None
+    st.pyplot(plot_dispersion(df, ellipse), clear_figure=True)
+    if ellipse is not None and not ellipse.gaussian_consistent:
+        st.warning(
+            f"Copertura empirica dell'ellisse {ellipse.empirical_coverage:.1%} contro {ellipse.level:.0%} "
+            "nominale: distribuzione non gaussiana, usare R95 per l'area di sicurezza."
+        )
+with right:
+    physical = df[df["status"].isin([FlightStatus.OK.value, FlightStatus.BALLISTIC.value])]
+    if len(physical) > 2:
+        st.pyplot(plot_convergence(physical["apogee_agl_m"]), clear_figure=True)
+    st.subheader("Esiti")
+    st.dataframe(pd.Series(summary.status_counts, name="voli"))
+
+errors = df[df["status"] == FlightStatus.ERROR.value]
+if len(errors):
+    with st.expander(f"{len(errors)} voli con errore"):
+        st.dataframe(errors[["index", "error"]])
+
+st.download_button("Scarica results.csv", df.to_csv(index=False).encode("utf-8"), "results.csv", "text/csv")

@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcsim"
+version = "0.2.0"
+description = "Analisi di dispersione Monte Carlo 6-DOF per razzi sperimentali, basata su RocketPy"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "rocketpy>=1.1.3,<2",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "matplotlib>=3.8",
+    "pandas>=2.1",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+app = ["streamlit>=1.40"]
+dev = ["pytest>=8", "mypy>=1.10", "ruff>=0.5", "pandas-stubs"]
+
+[project.scripts]
+mcsim = "mcsim.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: integra voli reali con RocketPy (qualche secondo per test)"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "BLE", "UP", "NPY", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]  # caratteri greci e simboli nelle docstring sono voluti
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = false
+
+[[tool.mypy.overrides]]
+module = ["rocketpy.*", "scipy.*", "matplotlib.*", "tqdm.*", "streamlit.*"]
+ignore_missing_imports = true

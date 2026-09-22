@@ -1,0 +1,108 @@
+# Configurazione di riferimento: razzo sperimentale Calisto (Projeto Jupiter)
+# con motore Cesaroni Pro75 M1670 Blue Streak.
+#
+# Questi valori coincidono con i default del codice (src/mcsim/config.py): il file
+# serve a modificarli senza toccare il codice.
+#   python -m mcsim -n 1000 --seed 42 --config config/default.toml
+#
+# Unità SI, nomi dei campi uguali ai dataclass. Una chiave sconosciuta è un errore.
+# I percorsi relativi si risolvono rispetto alla cartella di questo file.
+
+[site]
+# Sostituire con le coordinate del campo di lancio reale.
+latitude_deg = 45.06
+longitude_deg = 7.66
+elevation_m = 250.0
+wind_ref_height_m = 10.0      # quota dell'anemometro di riferimento
+wind_profile_top_m = 6000.0
+
+[launch]
+rail_length_m = 5.2
+inclination_deg = 85.0
+heading_deg = 0.0
+max_time_s = 600.0
+
+[motor]
+# Cesaroni Pro75 M1670 Blue Streak, dati di certificazione:
+# impulso totale 6026,35 N·s, spinta media 1545,22 N, picco 2200 N, combustione 3,9 s,
+# propellente 2,956 kg, massa totale 5,231 kg (Isp risultante 208 s).
+thrust_curve_csv = "../data/thrust_curve_M1670.csv"
+burn_time_s = 3.9
+dry_mass_kg = 2.275
+dry_inertia_kgm2 = [0.157, 0.157, 0.0025]
+nozzle_radius_m = 0.033
+throat_radius_m = 0.011
+grain_number = 5
+grain_density_kgm3 = 1815.0
+grain_outer_radius_m = 0.033
+grain_initial_inner_radius_m = 0.015
+grain_initial_height_m = 0.120
+grain_separation_m = 0.005
+grains_center_of_mass_position_m = 0.397
+center_of_dry_mass_position_m = 0.317
+
+[rocket]
+radius_m = 0.0635
+mass_kg = 14.426                       # a secco, senza motore
+inertia_kgm2 = [6.321, 6.321, 0.034]
+power_off_drag_csv = "../data/cd_power_off.csv"
+power_on_drag_csv = "../data/cd_power_on.csv"
+motor_position_m = -1.255
+nose_length_m = 0.55829
+nose_kind = "vonKarman"
+nose_position_m = 1.278
+fin_n = 4
+fin_root_chord_m = 0.120
+fin_tip_chord_m = 0.060
+fin_span_m = 0.110
+fin_position_m = -1.04956
+fin_cant_angle_deg = 0.5               # induce rollio: il volo usa tutti e 6 i gradi di libertà
+fin_thickness_m = 0.004                # pannelli G10, usato solo dalla stima Cd(Mach)
+# tail = false          # decommenta per togliere il boattail
+# rail_buttons = false  # decommenta per togliere i pattini di guida
+# drogue = false        # decommenta per simulare il recupero con il solo main
+
+[rocket.tail]
+top_radius_m = 0.0635
+bottom_radius_m = 0.0435
+length_m = 0.060
+position_m = -1.194656
+
+[rocket.rail_buttons]
+upper_position_m = 0.0818
+lower_position_m = -0.6182
+angular_position_deg = 45.0
+
+[rocket.drogue]
+name = "Drogue"
+cd_s_m2 = 1.0
+trigger = "apogee"
+lag_s = 1.5
+sampling_rate_hz = 105.0
+noise_pa = [0.0, 8.3, 0.5]
+
+[rocket.main]
+name = "Main"
+cd_s_m2 = 10.0
+trigger = 800.0        # quota AGL di apertura [m]
+lag_s = 1.5
+sampling_rate_hz = 105.0
+noise_pa = [0.0, 8.3, 0.5]
+
+# Se presente, [stochastic] SOSTITUISCE interamente il modello di incertezza.
+# Distribuzioni: fixed(value), normal(mean,std), truncnorm(mean,std,low,high),
+# lognormal(median,sigma), uniform(low,high), vonmises_deg(mean,kappa), weibull(shape,scale).
+[stochastic]
+inclination_deg     = { kind = "truncnorm", mean = 85.0, std = 0.5, low = 83.0, high = 87.0 }
+heading_deg         = { kind = "normal", mean = 0.0, std = 1.0 }
+rocket_mass_kg      = { kind = "truncnorm", mean = 14.426, std = 0.072, low = 14.21, high = 14.642 }
+impulse_scale       = { kind = "truncnorm", mean = 1.0, std = 0.02, low = 0.94, high = 1.06 }
+burn_time_scale     = { kind = "truncnorm", mean = 1.0, std = 0.015, low = 0.955, high = 1.045 }
+drag_scale          = { kind = "lognormal", median = 1.0, sigma = 0.08 }
+drogue_cds_scale    = { kind = "lognormal", median = 1.0, sigma = 0.08 }
+main_cds_scale      = { kind = "lognormal", median = 1.0, sigma = 0.08 }
+drogue_lag_s        = { kind = "lognormal", median = 1.5, sigma = 0.2 }
+main_lag_s          = { kind = "lognormal", median = 1.5, sigma = 0.2 }
+wind_speed_ref_ms   = { kind = "weibull", shape = 2.0, scale = 4.0 }
+wind_from_deg       = { kind = "vonmises_deg", mean = 270.0, kappa = 3.0 }
+wind_shear_exponent = { kind = "truncnorm", mean = 0.14, std = 0.04, low = 0.06, high = 0.30 }

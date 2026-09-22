@@ -1,0 +1,97 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
+\title{Analisi di dispersione Monte Carlo 6-DOF}
+\date{2026-09-22T18:05:34+00:00 UTC}
+\author{}
+\begin{document}
+\maketitle
+\section{Configurazione del run}
+\begin{table}[H]\centering\begin{tabular}{ll}\toprule
+Voli simulati & 200 \\
+Seed & \texttt{20261025} \\
+Processi paralleli & 2 \\
+Durata [s] & $292.8$ \\
+RocketPy / NumPy / SciPy & 1.1.3 / 2.4.6 / 1.17.1 \\
+Python & 3.11.15 \\
+\bottomrule\end{tabular}\end{table}
+\section{Esiti dei voli}
+\begin{table}[H]\centering\begin{tabular}{lrr}\toprule
+Esito & Voli & Quota \\ \midrule
+\texttt{ok} & 200 & $100.0\,\%$ \\
+\texttt{ballistic} & 0 & $0.0\,\%$ \\
+\texttt{no\_rail\_exit} & 0 & $0.0\,\%$ \\
+\texttt{not\_landed} & 0 & $0.0\,\%$ \\
+\texttt{non\_finite} & 0 & $0.0\,\%$ \\
+\texttt{error} & 0 & $0.0\,\%$ \\
+\bottomrule\end{tabular}\end{table}
+Tasso di successo: $100.0\,\%$, IC 95\,\% Clopper--Pearson [$98.2\,\%$, $100.0\,\%$]. Probabilità di impatto balistico tra i voli fisici: $0.00\,\%$, IC 95\,\% [$0.00\,\%$, $1.83\,\%$]. I voli con esito numerico non valido sono esclusi dalle statistiche seguenti.
+\section{Prestazioni}
+\begin{table}[H]\centering\begin{tabular}{lll}\toprule
+\multicolumn{3}{l}{\textbf{Apogeo AGL} (n = 200)} \\
+Media [m] & $3\,145.0$ & IC 95\,\%: [$3\,126.4$, $3\,163.7$] \\
+Deviazione standard [m] & $133.8$ & \\
+P5 / P50 / P95 [m] & $2\,946.0$ / $3\,137.4$ / $3\,378.8$ & IC 95\,\% P95: [$3\,350.1$, $3\,428.1$] \\
+Min / Max [m] & $2\,818.2$ / $3\,483.8$ & \\
+\midrule
+\multicolumn{3}{l}{\textbf{Numero di Mach massimo} (n = 200)} \\
+Media [-] & $0.827$ & IC 95\,\%: [$0.824$, $0.830$] \\
+Deviazione standard [-] & $0.019$ & \\
+P5 / P50 / P95 [-] & $0.800$ / $0.826$ / $0.863$ & IC 95\,\% P95: [$0.856$, $0.869$] \\
+Min / Max [-] & $0.780$ / $0.870$ & \\
+\midrule
+\multicolumn{3}{l}{\textbf{Margine statico al decollo} (n = 200)} \\
+Media [cal] & $2.06$ & IC 95\,\%: [$2.06$, $2.06$] \\
+Deviazione standard [cal] & $0.01$ & \\
+P5 / P50 / P95 [cal] & $2.05$ / $2.06$ / $2.07$ & IC 95\,\% P95: [$2.07$, $2.08$] \\
+Min / Max [cal] & $2.04$ / $2.08$ & \\
+\midrule
+\multicolumn{3}{l}{\textbf{Velocità all'apertura del main} (n = 200)} \\
+Media [m/s] & $17.8$ & IC 95\,\%: [$17.5$, $18.0$] \\
+Deviazione standard [m/s] & $1.8$ & \\
+P5 / P50 / P95 [m/s] & $15.5$ / $17.5$ / $20.9$ & IC 95\,\% P95: [$20.3$, $22.8$] \\
+Min / Max [m/s] & $14.9$ / $24.9$ & \\
+\bottomrule\end{tabular}\end{table}
+\section{Dispersione dei punti di impatto}
+\begin{table}[H]\centering\begin{tabular}{ll}\toprule
+Voli con recupero nominale & 200 \\
+CEP50 attorno al punto medio [m] & $902.6$ \\
+R95 attorno al punto medio [m] & $2\,469.4$ \\
+Distanza dalla rampa, P95 [m] & $3\,553.4$ (IC 95\,\% [$3\,205.6$, $4\,219.0$]) \\
+Distanza massima dalla rampa, tutti i voli fisici [m] & $5\,215.6$ \\
+\midrule
+Centro ellisse (Est, Nord) [m] & ($1\,403.1$, $639.4$) \\
+Semiassi [m] & $2\,333.9$ / $2\,163.0$ \\
+Orientazione semiasse maggiore [$^\circ$ da Est] & $76.5$ \\
+Fattore $k$ (prediction, $95\,\%$) & $2.4788$ \\
+Copertura empirica & $92.5\,\%$ \\
+\bottomrule\end{tabular}\end{table}
+\begin{figure}[H]\centering
+\includegraphics[width=0.8\linewidth]{dispersion.png}
+\caption{Punti di impatto ed ellisse di predizione.}
+\end{figure}
+\begin{figure}[H]\centering
+\includegraphics[width=0.8\linewidth]{convergence.png}
+\caption{Convergenza della media dell'apogeo al crescere del numero di voli.}
+\end{figure}
+\section{Modello stocastico}
+\begin{table}[H]\centering\begin{tabular}{ll}\toprule
+Parametro & Distribuzione \\ \midrule
+\texttt{inclination\_deg} & kind=truncnorm, mean=85, std=0.5, low=83, high=87 \\
+\texttt{heading\_deg} & kind=normal, mean=0, std=1 \\
+\texttt{rocket\_mass\_kg} & kind=truncnorm, mean=14.426, std=0.072, low=14.21, high=14.642 \\
+\texttt{impulse\_scale} & kind=truncnorm, mean=1, std=0.02, low=0.94, high=1.06 \\
+\texttt{burn\_time\_scale} & kind=truncnorm, mean=1, std=0.015, low=0.955, high=1.045 \\
+\texttt{drag\_scale} & kind=lognormal, median=1, sigma=0.08 \\
+\texttt{drogue\_cds\_scale} & kind=lognormal, median=1, sigma=0.08 \\
+\texttt{main\_cds\_scale} & kind=lognormal, median=1, sigma=0.08 \\
+\texttt{drogue\_lag\_s} & kind=lognormal, median=1.5, sigma=0.2 \\
+\texttt{main\_lag\_s} & kind=lognormal, median=1.5, sigma=0.2 \\
+\texttt{wind\_speed\_ref\_ms} & kind=weibull, shape=2, scale=4 \\
+\texttt{wind\_from\_deg} & kind=vonmises\_deg, mean=270, kappa=3 \\
+\texttt{wind\_shear\_exponent} & kind=truncnorm, mean=0.14, std=0.04, low=0.06, high=0.3 \\
+\bottomrule\end{tabular}\end{table}
+\end{document}

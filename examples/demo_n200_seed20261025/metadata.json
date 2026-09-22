@@ -1,0 +1,197 @@
+{
+  "seed": 20261025,
+  "n_flights": 200,
+  "workers": 2,
+  "started_utc": "2026-09-22T18:05:34+00:00",
+  "wall_time_s": 292.796,
+  "status_counts": {
+    "ok": 200,
+    "ballistic": 0,
+    "no_rail_exit": 0,
+    "not_landed": 0,
+    "non_finite": 0,
+    "error": 0
+  },
+  "numpy_trapz_shim": true,
+  "versions": {
+    "python": "3.11.15",
+    "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+    "mcsim": "0.2.0",
+    "rocketpy": "1.1.3",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "matplotlib": "3.11.2",
+    "pandas": "3.0.6"
+  },
+  "config": {
+    "site": {
+      "latitude_deg": 45.06,
+      "longitude_deg": 7.66,
+      "elevation_m": 250.0,
+      "wind_ref_height_m": 10.0,
+      "wind_profile_top_m": 6000.0
+    },
+    "motor": {
+      "thrust_curve_csv": "data/thrust_curve_M1670.csv",
+      "burn_time_s": 3.9,
+      "dry_mass_kg": 2.275,
+      "dry_inertia_kgm2": [
+        0.157,
+        0.157,
+        0.0025
+      ],
+      "nozzle_radius_m": 0.033,
+      "throat_radius_m": 0.011,
+      "grain_number": 5,
+      "grain_density_kgm3": 1815.0,
+      "grain_outer_radius_m": 0.033,
+      "grain_initial_inner_radius_m": 0.015,
+      "grain_initial_height_m": 0.12,
+      "grain_separation_m": 0.005,
+      "grains_center_of_mass_position_m": 0.397,
+      "center_of_dry_mass_position_m": 0.317
+    },
+    "rocket": {
+      "radius_m": 0.0635,
+      "mass_kg": 14.426,
+      "inertia_kgm2": [
+        6.321,
+        6.321,
+        0.034
+      ],
+      "power_off_drag_csv": "data/cd_power_off.csv",
+      "power_on_drag_csv": "data/cd_power_on.csv",
+      "motor_position_m": -1.255,
+      "nose_length_m": 0.55829,
+      "nose_kind": "vonKarman",
+      "nose_position_m": 1.278,
+      "fin_n": 4,
+      "fin_root_chord_m": 0.12,
+      "fin_tip_chord_m": 0.06,
+      "fin_span_m": 0.11,
+      "fin_position_m": -1.04956,
+      "fin_cant_angle_deg": 0.5,
+      "fin_sweep_length_m": null,
+      "fin_thickness_m": 0.004,
+      "tail": {
+        "top_radius_m": 0.0635,
+        "bottom_radius_m": 0.0435,
+        "length_m": 0.06,
+        "position_m": -1.194656
+      },
+      "rail_buttons": {
+        "upper_position_m": 0.0818,
+        "lower_position_m": -0.6182,
+        "angular_position_deg": 45.0
+      },
+      "drogue": {
+        "name": "Drogue",
+        "cd_s_m2": 1.0,
+        "trigger": "apogee",
+        "lag_s": 1.5,
+        "sampling_rate_hz": 105.0,
+        "noise_pa": [
+          0.0,
+          8.3,
+          0.5
+        ]
+      },
+      "main": {
+        "name": "Main",
+        "cd_s_m2": 10.0,
+        "trigger": 800.0,
+        "lag_s": 1.5,
+        "sampling_rate_hz": 105.0,
+        "noise_pa": [
+          0.0,
+          8.3,
+          0.5
+        ]
+      }
+    },
+    "launch": {
+      "rail_length_m": 5.2,
+      "inclination_deg": 85.0,
+      "heading_deg": 0.0,
+      "max_time_s": 600.0
+    },
+    "stochastic": {
+      "inclination_deg": {
+        "kind": "truncnorm",
+        "mean": 85.0,
+        "std": 0.5,
+        "low": 83.0,
+        "high": 87.0
+      },
+      "heading_deg": {
+        "kind": "normal",
+        "mean": 0.0,
+        "std": 1.0
+      },
+      "rocket_mass_kg": {
+        "kind": "truncnorm",
+        "mean": 14.426,
+        "std": 0.072,
+        "low": 14.21,
+        "high": 14.642
+      },
+      "impulse_scale": {
+        "kind": "truncnorm",
+        "mean": 1.0,
+        "std": 0.02,
+        "low": 0.94,
+        "high": 1.06
+      },
+      "burn_time_scale": {
+        "kind": "truncnorm",
+        "mean": 1.0,
+        "std": 0.015,
+        "low": 0.955,
+        "high": 1.045
+      },
+      "drag_scale": {
+        "kind": "lognormal",
+        "median": 1.0,
+        "sigma": 0.08
+      },
+      "drogue_cds_scale": {
+        "kind": "lognormal",
+        "median": 1.0,
+        "sigma": 0.08
+      },
+      "main_cds_scale": {
+        "kind": "lognormal",
+        "median": 1.0,
+        "sigma": 0.08
+      },
+      "drogue_lag_s": {
+        "kind": "lognormal",
+        "median": 1.5,
+        "sigma": 0.2
+      },
+      "main_lag_s": {
+        "kind": "lognormal",
+        "median": 1.5,
+        "sigma": 0.2
+      },
+      "wind_speed_ref_ms": {
+        "kind": "weibull",
+        "shape": 2.0,
+        "scale": 4.0
+      },
+      "wind_from_deg": {
+        "kind": "vonmises_deg",
+        "mean": 270.0,
+        "kappa": 3.0
+      },
+      "wind_shear_exponent": {
+        "kind": "truncnorm",
+        "mean": 0.14,
+        "std": 0.04,
+        "low": 0.06,
+        "high": 0.3
+      }
+    }
+  },
+  "note": "Campagna di esempio inclusa nel repository, generata con `python -m mcsim -n 200 --seed 20261025`."
+}
