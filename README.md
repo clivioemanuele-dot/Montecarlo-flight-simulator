@@ -56,8 +56,19 @@ Ogni run crea `runs\<data>_seed<seed>_n<N>\` con:
 
 Stesso seed e stessa configurazione producono lo stesso `results.csv`, con qualunque numero di worker.
 
-La dashboard non è mai vuota: se `runs\` non contiene ancora nulla mostra la campagna di esempio
-in `examples\` (200 voli, seed 20261025), segnalandolo in cima alla pagina.
+## Dashboard
+
+`streamlit run app.py` apre l'interfaccia, divisa in sei schede: panoramica, mappa di atterraggio,
+distribuzioni, convergenza, configurazione della campagna e dati grezzi.
+
+Dalla barra laterale si sceglie la campagna da analizzare e si regolano le opzioni di analisi:
+livello di confidenza (90, 95 o 99 %), metodo di calcolo dell'ellisse, esiti da mostrare sulla
+mappa. Dalla stessa barra si può lanciare una nuova campagna indicando numero di voli, seed e
+processi in parallelo, con la durata stimata prima di avviarla. I risultati si scaricano in CSV,
+i metadati in JSON e il report in LaTeX.
+
+Se la cartella `runs\` è vuota, la dashboard apre la campagna di esempio in `examples\`
+(200 voli, seed 20261025) e lo indica in cima alla pagina.
 
 ## Deploy su Streamlit Community Cloud
 

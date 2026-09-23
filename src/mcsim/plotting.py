@@ -112,6 +112,31 @@ def plot_convergence(apogee_agl_m: np.ndarray | pd.Series) -> Figure:
     return fig
 
 
+def plot_histogram(values: np.ndarray | pd.Series, label: str, unit: str, bins: int = 30) -> Figure:
+    """Distribuzione di una grandezza, con media e 95esimo percentile evidenziati."""
+    data = np.asarray(values, dtype=float)
+    data = data[np.isfinite(data)]
+    fig = Figure(figsize=(7.5, 4.0), layout="constrained")
+    ax = fig.subplots()
+    if data.size:
+        ax.hist(data, bins=bins, color=SERIES[FlightStatus.OK], alpha=0.85, edgecolor=SURFACE, linewidth=0.8)
+        mean, p95 = float(np.mean(data)), float(np.quantile(data, 0.95))
+        ax.axvline(mean, color=INK, linestyle="--", linewidth=1.5, label=f"Media: {mean:,.1f} {unit}")
+        ax.axvline(
+            p95,
+            color=SERIES[FlightStatus.BALLISTIC],
+            linestyle="--",
+            linewidth=1.5,
+            label=f"95esimo percentile: {p95:,.1f} {unit}",
+        )
+        ax.legend(loc="best", fontsize=8, frameon=False, labelcolor=INK)
+    ax.set_xlabel(f"{label} [{unit}]" if unit else label)
+    ax.set_ylabel("Numero di voli")
+    ax.set_title(f"Distribuzione: {label.lower()}", loc="left", fontsize=12)
+    _style(fig)
+    return fig
+
+
 def save_figure(fig: Figure, path: Path, dpi: int = 200) -> None:
     """Salva su file temporaneo e rinomina: mai un PNG troncato su disco."""
     tmp = path.with_name(f".{path.stem}.tmp{path.suffix}")
