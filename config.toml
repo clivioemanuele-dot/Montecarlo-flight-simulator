@@ -1,0 +1,13 @@
+# Tema della dashboard: scuro, di impostazione "mission control".
+# Streamlit lo applica automaticamente, anche su Streamlit Community Cloud.
+
+[theme]
+base = "dark"
+primaryColor = "#3987e5"
+backgroundColor = "#070b14"
+secondaryBackgroundColor = "#111a2e"
+textColor = "#e6ecf8"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"

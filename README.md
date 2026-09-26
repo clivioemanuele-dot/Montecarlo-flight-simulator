@@ -58,14 +58,20 @@ Stesso seed e stessa configurazione producono lo stesso `results.csv`, con qualu
 
 ## Dashboard
 
-`streamlit run app.py` apre l'interfaccia, divisa in sei schede: panoramica, mappa di atterraggio,
-distribuzioni, convergenza, configurazione della campagna e dati grezzi.
+`streamlit run app.py` apre l'interfaccia, in tema scuro, divisa in sette schede: panoramica,
+mappa di atterraggio, distribuzioni, convergenza, configurazione della campagna, dati grezzi e
+glossario dei termini. In cima alla pagina un riquadro "Come leggere questa dashboard" spiega
+che cosa contiene ciascuna scheda, e ogni scheda si apre con una riga che dice cosa si sta guardando.
 
-Dalla barra laterale si sceglie la campagna da analizzare e si regolano le opzioni di analisi:
-livello di confidenza (90, 95 o 99 %), metodo di calcolo dell'ellisse, esiti da mostrare sulla
-mappa. Dalla stessa barra si può lanciare una nuova campagna indicando numero di voli, seed e
-processi in parallelo, con la durata stimata prima di avviarla. I risultati si scaricano in CSV,
-i metadati in JSON e il report in LaTeX.
+Dalla barra laterale si sceglie la campagna da analizzare e si regolano le opzioni: livello di
+confidenza (90, 95 o 99 %), metodo di calcolo dell'ellisse, esiti da mostrare sulla mappa.
+Dalla stessa barra si lancia una nuova campagna indicando quanti voli simulare e quanti processi
+usare, con la durata stimata prima di avviare; il seed viene assegnato automaticamente e registrato
+nei metadati, così la campagna resta riproducibile. I risultati si scaricano in CSV, i metadati in
+JSON e il report in LaTeX.
+
+Il tema è definito in `.streamlit/config.toml`; i grafici della dashboard usano la palette scura,
+quelli del report LaTeX restano su fondo chiaro perché sono pensati per la stampa.
 
 Se la cartella `runs\` è vuota, la dashboard apre la campagna di esempio in `examples\`
 (200 voli, seed 20261025) e lo indica in cima alla pagina.
@@ -86,6 +92,7 @@ bastano per la campagna di esempio e per una prova da qualche decina di voli, no
 ```
 poli_mc_sim/
   app.py                  dashboard Streamlit (legge i run salvati, non genera dati)
+  .streamlit/config.toml  tema scuro della dashboard
   pyproject.toml          pacchetto, dipendenze, extra [app] e [dev], ruff e mypy
   config/default.toml     configurazione di riferimento, uguale ai default del codice
   data/                   curva di spinta e curve Cd(Mach) + README con la provenienza
