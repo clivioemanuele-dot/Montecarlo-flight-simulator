@@ -63,12 +63,13 @@ mappa di atterraggio, distribuzioni, convergenza, configurazione della campagna,
 glossario dei termini. In cima alla pagina un riquadro "Come leggere questa dashboard" spiega
 che cosa contiene ciascuna scheda, e ogni scheda si apre con una riga che dice cosa si sta guardando.
 
-Dalla barra laterale si sceglie la campagna da analizzare e si regolano le opzioni: livello di
-confidenza (90, 95 o 99 %), metodo di calcolo dell'ellisse, esiti da mostrare sulla mappa.
-Dalla stessa barra si lancia una nuova campagna indicando quanti voli simulare e quanti processi
-usare, con la durata stimata prima di avviare; il seed viene assegnato automaticamente e registrato
-nei metadati, così la campagna resta riproducibile. I risultati si scaricano in CSV, i metadati in
-JSON e il report in LaTeX.
+La barra laterale ha in cima la scelta della campagna e sotto tre pannelli richiudibili, così resta
+corta anche su schermi bassi: *Opzioni di analisi* (livello di confidenza 90, 95 o 99 %, metodo di
+calcolo dell'ellisse, esiti da mostrare sulla mappa), *Esegui una nuova campagna* (numero di voli e
+processi, con la durata stimata prima di avviare; il seed viene assegnato automaticamente e
+registrato nei metadati, così la campagna resta riproducibile) e *Cartella dei risultati*, che serve
+solo se le campagne stanno fuori da `runs\`. I risultati si scaricano in CSV, i metadati in JSON e
+il report in LaTeX.
 
 Il tema è definito in `.streamlit/config.toml`; i grafici della dashboard usano la palette scura,
 quelli del report LaTeX restano su fondo chiaro perché sono pensati per la stampa.

@@ -122,32 +122,35 @@ GLOSSARY = [
 
 SPACE_CSS = """
 <style>
+/* Cielo stellato come strati di background della pagina, non come overlay:
+   un elemento sovrapposto intercetterebbe la rotella del mouse e impedirebbe
+   di scorrere la barra laterale. */
 .stApp {
-    background:
+    background-color: #070b14;
+    background-image:
         radial-gradient(1100px 620px at 18% -12%, rgba(57, 135, 229, 0.20), transparent 62%),
         radial-gradient(900px 520px at 88% 4%, rgba(217, 89, 38, 0.12), transparent 58%),
-        #070b14;
+        radial-gradient(1px 1px at 24px 36px, rgba(255, 255, 255, 0.42), transparent),
+        radial-gradient(1px 1px at 148px 92px, rgba(255, 255, 255, 0.28), transparent),
+        radial-gradient(1.6px 1.6px at 232px 168px, rgba(255, 255, 255, 0.22), transparent),
+        radial-gradient(1px 1px at 318px 64px, rgba(255, 255, 255, 0.26), transparent),
+        radial-gradient(1.2px 1.2px at 78px 244px, rgba(255, 255, 255, 0.18), transparent);
+    background-repeat: no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat;
+    background-size: 100% 100%, 100% 100%, 380px 380px, 380px 380px, 380px 380px, 380px 380px, 380px 380px;
+    background-attachment: fixed;
 }
-.stApp::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.55;
-    background-image:
-        radial-gradient(1px 1px at 24px 36px, rgba(255,255,255,0.75), transparent),
-        radial-gradient(1px 1px at 148px 92px, rgba(255,255,255,0.50), transparent),
-        radial-gradient(1.6px 1.6px at 232px 168px, rgba(255,255,255,0.38), transparent),
-        radial-gradient(1px 1px at 318px 64px, rgba(255,255,255,0.45), transparent),
-        radial-gradient(1.2px 1.2px at 78px 244px, rgba(255,255,255,0.32), transparent);
-    background-size: 380px 380px;
-}
-[data-testid="stAppViewContainer"], section[data-testid="stSidebar"] { position: relative; z-index: 1; }
 section[data-testid="stSidebar"] {
     background: rgba(8, 12, 22, 0.94);
     border-right: 1px solid rgba(92, 132, 200, 0.22);
 }
+/* La barra laterale deve scorrere anche quando i controlli superano l'altezza
+   dello schermo, con spazio in fondo per l'ultimo elemento. */
+section[data-testid="stSidebar"] > div {
+    max-height: 100vh;
+    overflow-y: auto;
+}
+section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] { padding-bottom: 4rem; }
+section[data-testid="stSidebar"] hr { margin: 0.6rem 0; }
 h1 { letter-spacing: -0.02em; }
 h2, h3 { letter-spacing: -0.01em; }
 [data-testid="stMetric"] {
@@ -218,10 +221,17 @@ def duration_hint(n_flights: int, workers: int) -> str:
 
 
 # --------------------------------------------------------------------------- barra laterale
-st.sidebar.title("🚀 Controlli")
+# I controlli stanno in pannelli richiudibili, così la barra resta corta anche su
+# schermi bassi. I contenitori riservano la posizione: il pannello della cartella
+# compare in fondo pur essendo letto per primo, perché serve a trovare le campagne.
+sb = st.sidebar
+sb.markdown("### 🚀 Controlli")
+campaign_slot = sb.container()
+options_slot = sb.container()
+launch_slot = sb.container()
+folder_slot = sb.container()
 
-st.sidebar.header("Campagna da analizzare")
-with st.sidebar.expander("Cartella dei risultati", expanded=False):
+with folder_slot.expander("Cartella dei risultati", expanded=False):
     folder = st.text_input(
         "Percorso",
         value="runs",
@@ -247,8 +257,8 @@ options = [str(p) for p in runs]
 labels = {str(p): describe_run(p) for p in runs}
 stored = st.session_state.get("selected_run")
 index = options.index(stored) if stored in options else 0
-selected = st.sidebar.selectbox(
-    "Campagna",
+selected = campaign_slot.selectbox(
+    "Campagna da analizzare",
     options,
     index=index,
     format_func=lambda p: labels[p],
@@ -256,36 +266,35 @@ selected = st.sidebar.selectbox(
 )
 st.session_state["selected_run"] = selected
 
-st.sidebar.header("Opzioni di analisi")
-level_label = st.sidebar.select_slider(
-    "Livello di confidenza",
-    options=list(CONFIDENCE_LEVELS),
-    value="95% (consigliato)",
-    help="Si applica agli intervalli di confidenza delle stime e all'ellisse disegnata sulla mappa.",
-)
-level = CONFIDENCE_LEVELS[level_label]
+with options_slot.expander("Opzioni di analisi", expanded=True):
+    level_label = st.select_slider(
+        "Livello di confidenza",
+        options=list(CONFIDENCE_LEVELS),
+        value="95% (consigliato)",
+        help="Si applica agli intervalli di confidenza delle stime e all'ellisse disegnata sulla mappa.",
+    )
+    level = CONFIDENCE_LEVELS[level_label]
 
-ellipse_label = st.sidebar.radio(
-    "Metodo dell'ellisse",
-    list(ELLIPSE_METHODS),
-    help=(
-        "L'ellisse di predizione è più larga perché considera che media e dispersione "
-        "sono stimate da un numero finito di voli. Con molte simulazioni le due coincidono."
-    ),
-)
-ellipse_method = ELLIPSE_METHODS[ellipse_label]
+    ellipse_label = st.radio(
+        "Metodo dell'ellisse",
+        list(ELLIPSE_METHODS),
+        help=(
+            "L'ellisse di predizione è più larga perché considera che media e dispersione "
+            "sono stimate da un numero finito di voli. Con molte simulazioni le due coincidono."
+        ),
+    )
+    ellipse_method = ELLIPSE_METHODS[ellipse_label]
 
-visible_statuses = st.sidebar.multiselect(
-    "Esiti da mostrare nella mappa",
-    options=[FlightStatus.OK.value, FlightStatus.BALLISTIC.value],
-    default=[FlightStatus.OK.value, FlightStatus.BALLISTIC.value],
-    format_func=lambda s: STATUS_LABELS[s],
-    help="Utile per isolare gli impatti balistici quando sono presenti.",
-)
-show_ellipse = st.sidebar.checkbox("Mostra l'area di atterraggio stimata", value=True)
+    visible_statuses = st.multiselect(
+        "Esiti da mostrare nella mappa",
+        options=[FlightStatus.OK.value, FlightStatus.BALLISTIC.value],
+        default=[FlightStatus.OK.value, FlightStatus.BALLISTIC.value],
+        format_func=lambda s: STATUS_LABELS[s],
+        help="Utile per isolare gli impatti balistici quando sono presenti.",
+    )
+    show_ellipse = st.checkbox("Mostra l'area di atterraggio stimata", value=True)
 
-st.sidebar.header("Esegui una nuova campagna")
-with st.sidebar.form("nuova_campagna"):
+with launch_slot.expander("Esegui una nuova campagna", expanded=False), st.form("nuova_campagna"):
     n_flights = st.number_input(
         "Numero di voli", min_value=20, max_value=500, value=50, step=10, help="Più voli, stime più precise."
     )
@@ -367,9 +376,10 @@ comportamento dei paracadute. Il risultato non è un singolo volo, ma la distrib
 
 **I controlli a sinistra**
 
-Scegli la campagna da analizzare, regola il livello di confidenza e il metodo dell'ellisse, decidi quali
-esiti mostrare sulla mappa. Dalla stessa barra puoi lanciare una nuova campagna: indichi quanti voli
-simulare e quanti processi usare, il resto è automatico.
+In cima scegli la campagna da analizzare. Sotto, nei pannelli richiudibili: *Opzioni di analisi* regola
+livello di confidenza, metodo dell'ellisse ed esiti mostrati sulla mappa; *Esegui una nuova campagna*
+avvia una simulazione indicando quanti voli e quanti processi usare, il resto è automatico;
+*Cartella dei risultati* serve solo se tieni le campagne in una cartella diversa da `runs`.
         """
     )
 
